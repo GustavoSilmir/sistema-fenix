@@ -1,1 +1,34 @@
-<p>login works!</p>
+<div class="login-wrapper">
+  <div class="login-card">
+    <h2>🚀 Sistema Fênix</h2>
+    <p>Faça login para acessar o painel</p>
+
+    <form [formGroup]="formularioLogin" (ngSubmit)="efetuarLogin()">
+      
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="exemplo@sistema.com"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input 
+          type="password" 
+          id="senha" 
+          formControlName="senha" 
+          placeholder="Digite sua senha"
+          required>
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="formularioLogin.invalid">
+        Entrar no Sistema
+      </button>
+
+    </form>
+  </div>
+</div>
