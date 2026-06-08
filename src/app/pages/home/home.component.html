@@ -1,1 +1,176 @@
-<p>home works!</p>
+<div class="home-container">
+  <header class="home-header">
+    <div class="welcome-text">
+      <h1>Olá, {{ nomeUsuario }}! 🎉</h1>
+      <p>Bem-vindo ao <strong>Sistema Fênix</strong>. Nível de acesso: <span class="badge">{{ roleUsuario }}</span></p>
+    </div>
+    
+    <div class="header-actions">
+      @if (roleUsuario === 'admin') {
+        <button class="btn-novo" (click)="abrirModalNovo()">➕ Novo Usuário</button>
+      }
+      <button class="btn-logout" (click)="logout()">🚪 Sair</button>
+    </div>
+  </header>
+
+  @if (roleUsuario === 'admin') {
+    <section class="admin-panel">
+      <h2>🗂️ Gerenciamento de Contas (Neon PostgreSQL)</h2>
+      
+      <div class="table-wrapper">
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome Completo</th>
+              <th>E-mail</th>
+              <th>Nascimento</th>
+              <th>Cargo (Role)</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (usr of listaUsuarios; track usr.id) {
+              <tr>
+                <td>{{ usr.id }}</td>
+                <td>{{ usr.nome }} {{ usr.sobrenome }}</td>
+                <td>{{ usr.email }}</td>
+                <td>{{ usr.data_nascimento | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+                <td><span class="role-tag" [class.admin-tag]="usr.role === 'admin'">{{ usr.role }}</span></td>
+                <td>
+                  <button class="btn-edit" (click)="abrirModalEditar(usr)">✏️ Editar</button>
+                  <button class="btn-treino" (click)="abrirTreinos(usr)">🏋️‍♂️ Treino</button>
+                  @if (usr.email !== 'master@sistema.com') {
+                    <button class="btn-delete" (click)="deletarUsuario(usr.id, usr.nome)">🗑️ Deletar</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <main class="user-panel">
+      <div class="panel-intro">
+        <h2>💪 Sua Ficha de Treino Atual</h2>
+        <p>Confira abaixo os exercícios preparados pelo seu professor:</p>
+      </div>
+
+      <div class="categorias-grid">
+        @for (cat of categoriasTreino; track cat) {
+          <div class="categoria-box user-box">
+            <div class="cat-top">
+              <h4>🔥 {{ cat }}</h4>
+            </div>
+            
+            <ul class="exercicios-lista">
+              @for (ex of getExerciciosPorCategoria(cat); track ex.id) {
+                <li class="user-li" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 12px;">
+                  <span style="font-weight: 500;">💪 {{ ex.nomeExercicio }}</span>
+                  
+                  @if (ex.urlGif) {
+                    <img [src]="ex.urlGif" alt="Demonstração do Exercício" style="width: 100%; max-width: 220px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                  }
+                </li>
+              } @empty {
+                <li class="vazio">Nenhum exercício para hoje</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </main>
+  }
+
+  @if (exibirModal) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <h3>{{ modoEdicao ? '✏️ Alterar Cadastro' : '🚀 Registrar Novo Usuário' }}</h3>
+        
+        <form [formGroup]="formularioUsuario" (ngSubmit)="salvarUsuario()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nome</label>
+              <input type="text" formControlName="nome">
+            </div>
+            <div class="form-group">
+              <label>Sobrenome</label>
+              <input type="text" formControlName="sobrenome">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" formControlName="email">
+          </div>
+
+          <div class="form-group">
+            <label>Senha {{ modoEdicao ? '(Deixe em branco para manter a atual)' : '' }}</label>
+            <input type="password" formControlName="senha" placeholder="Digite a senha">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data de Nascimento</label>
+              <input type="date" formControlName="dataNascimento">
+            </div>
+            <div class="form-group">
+              <label>Nível de Acesso</label>
+              <select formControlName="role">
+                <option value="user">User (Aluno)</option>
+                <option value="admin">Admin (Professor/Dono)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-cancelar" (click)="exibirModal = false">Cancelar</button>
+            <button type="submit" class="btn-salvar" [disabled]="formularioUsuario.invalid">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (exibirPainelTreino) {
+    <div class="modal-overlay">
+      <div class="modal-card treino-card">
+        <div class="treino-header">
+          <h3>Ficha de Treino: {{ alunoSelecionado.nome }} {{ alunoSelecionado.sobrenome }}</h3>
+          <button class="btn-fechar" (click)="exibirPainelTreino = false">❌ Fechar</button>
+        </div>
+
+        <div class="categorias-grid">
+          @for (cat of categoriasTreino; track cat) {
+            <div class="categoria-box">
+              <div class="cat-top">
+                <h4>{{ cat }}</h4>
+              </div>
+
+              <div class="seletor-exercicio">
+                <select #selectExercicio (change)="incluirExercicio(cat, selectExercicio.value); selectExercicio.value = ''">
+                  <option value="">➕ Adicionar Exercício...</option>
+                  @for (opcao of opcoesExercicios[cat.toLowerCase()]; track opcao) {
+                    <option [value]="opcao">{{ opcao }}</option>
+                  }
+                </select>
+              </div>
+              
+              <ul class="exercicios-lista">
+                @for (ex of getExerciciosPorCategoria(cat); track ex.id) {
+                  <li>
+                    <span>💪 {{ ex.nomeExercicio }}</span>
+                    <button class="btn-remove-ex" (click)="removerExercicio(ex.id)">❌</button>
+                  </li>
+                } @empty {
+                  <li class="vazio">Nenhum exercício cadastrado</li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

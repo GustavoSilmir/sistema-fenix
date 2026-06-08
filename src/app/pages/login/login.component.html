@@ -1,32 +1,55 @@
 <div class="login-wrapper">
   <div class="login-card">
     <h2>🚀 Sistema Fênix</h2>
-    <p>Faça login para acessar o painel</p>
+    
+    <div class="tabs">
+      <button [class.active]="modoLogin" (click)="alternarModo(true)">Login</button>
+      <button [class.active]="!modoLogin" (click)="alternarModo(false)">Cadastrar</button>
+    </div>
 
-    <form [formGroup]="formularioLogin" (ngSubmit)="efetuarLogin()">
+    <form [formGroup]="formulario" (ngSubmit)="enviar()">
       
+      @if (!modoLogin) {
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" formControlName="nome" placeholder="John">
+          </div>
+          <div class="form-group">
+            <label>Sobrenome</label>
+            <input type="text" formControlName="sobrenome" placeholder="Doe">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" formControlName="dataNascimento">
+        </div>
+      }
+
       <div class="form-group">
-        <label for="email">E-mail</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email" 
-          placeholder="exemplo@sistema.com"
-          required>
+        <label>E-mail</label>
+        <input type="email" formControlName="email" placeholder="exemplo@sistema.com">
       </div>
 
       <div class="form-group">
-        <label for="senha">Senha</label>
-        <input 
-          type="password" 
-          id="senha" 
-          formControlName="senha" 
-          placeholder="Digite sua senha"
-          required>
+        <label>Senha</label>
+        <input type="password" formControlName="senha" placeholder="Digite sua senha">
       </div>
 
-      <button type="submit" class="btn-login" [disabled]="formularioLogin.invalid">
-        Entrar no Sistema
+      @if (!modoLogin) {
+        <div class="form-group">
+          <label>Confirme sua Senha</label>
+          <input type="password" formControlName="confirmarSenha" placeholder="Repita a senha">
+        </div>
+      }
+
+      <button type="submit" class="btn-login" [disabled]="formulario.invalid || carregando">
+        @if (carregando) {
+          <span class="spinner"></span> Aguarde...
+        } @else {
+          {{ modoLogin ? 'Entrar no Sistema' : 'Criar minha Conta' }}
+        }
       </button>
 
     </form>
